@@ -27,7 +27,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// genkeyCmd represents the genkey command
 var genkeysCmd = &cobra.Command{
 	Use:   "genkeys",
 	Short: "Generates RSA key pair",

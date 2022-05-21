@@ -42,7 +42,6 @@ var plaintext string
 var encryptionKey string
 var passphrase string
 
-// encryptCmd represents the encrypt command
 var encryptCmd = &cobra.Command{
 	Use:   "encrypt",
 	Short: "Encrypts string/file",
@@ -53,9 +52,7 @@ Change the above by passing apropriate flag.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if algorythmName == "aes" {
 			if encryptionKey == "" {
-				// * User didn't provide the encryption key so we generate using passphrase
 				if passphrase != "" {
-					// * Generate the key using sha256
 					hash := sha256.Sum256([]byte(passphrase))
 					encryptionKey = hex.EncodeToString(hash[:])
 				} else {
@@ -63,12 +60,10 @@ Change the above by passing apropriate flag.`,
 				}
 			}
 			if plaintext != "" {
-				// * Encrypts the string and encodes it to hex and prints it
 				fmt.Println("Encryption Successful, hex:")
 				fmt.Println(hex.EncodeToString(encryptString([]byte(plaintext))))
 			} else {
 				if inFile != "" && outFile != "" {
-					// If user provided input file and output file script will write result to the file
 					fmt.Println("File mode")
 					ciphertext := encryptString(readFileIn(inFile))
 					writeFileOut(outFile, ciphertext)
@@ -77,19 +72,18 @@ Change the above by passing apropriate flag.`,
 				}
 			}
 		} else if algorythmName == "rsa" {
-			// Use the RSA encryption
 			if encryptionKey != "" {
-				// In the case of encryption key not being null read the file and use it as public key
 				f, err := ioutil.ReadFile(encryptionKey)
 				if err != nil {
 					panic(err)
 				}
+
 				publicKey, err := ParseRsaPublicKeyFromPemStr(string(f))
 				if err != nil {
 					panic(err)
 				}
+
 				if inFile != "" && outFile != "" {
-					// * Read from file and load result to the out file
 					inFileRaw, err := ioutil.ReadFile(inFile)
 					if err != nil {
 						panic(err)
@@ -105,7 +99,6 @@ Change the above by passing apropriate flag.`,
 					}
 					writeFileOut(outFile, encryptedBytes)
 				} else if plaintext != "" {
-					// If plaintext is provided and files haven't been provided encrypt using the encryption key
 					encryptedBytes, err := rsa.EncryptOAEP(
 						sha256.New(),
 						rand.Reader,
@@ -117,15 +110,12 @@ Change the above by passing apropriate flag.`,
 					}
 					fmt.Println(hex.EncodeToString(encryptedBytes))
 				} else {
-					// User provided wrong flags
 					panic("Please use apropriate flags")
 				}
 			} else {
-				// User didn't provide public key
 				panic("Please provide a public key to encrypt message")
 			}
 		} else {
-			// User entered the wrong algorythm name
 			panic("algorythm name not recognized")
 		}
 	},
@@ -144,7 +134,7 @@ func init() {
 }
 
 func readFileIn(FilePath string) []byte {
-	// Reads file and returns byte array
+	// * Reads file and returns byte array
 	f, err := ioutil.ReadFile(FilePath)
 	if err != nil {
 		panic(err)
@@ -159,7 +149,7 @@ func writeFileOut(FileName string, Data []byte) {
 }
 
 func encryptString(Data []byte) []byte {
-	// Encrypt the byte array and return ciphertext as byte array
+	// * Encrypt the byte array and return ciphertext as byte array
 	switch algorythmName {
 	case "aes":
 		key, err := hex.DecodeString(encryptionKey)
@@ -186,7 +176,6 @@ func encryptString(Data []byte) []byte {
 }
 
 func ParseRsaPrivateKeyFromPemStr(privPEM string) (*rsa.PrivateKey, error) {
-	// Parses the RSA private key from file
 	block, _ := pem.Decode([]byte(privPEM))
 	if block == nil {
 		return nil, errors.New("failed to parse PEM block containing the key")
@@ -201,7 +190,6 @@ func ParseRsaPrivateKeyFromPemStr(privPEM string) (*rsa.PrivateKey, error) {
 }
 
 func ParseRsaPublicKeyFromPemStr(pubPEM string) (*rsa.PublicKey, error) {
-	// Parses the RSA public key from file
 	block, _ := pem.Decode([]byte(pubPEM))
 	if block == nil {
 		return nil, errors.New("failed to parse PEM block containing the key")

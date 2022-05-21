@@ -39,7 +39,6 @@ var outputFile string
 var inputFile string
 var hashSumFile string
 
-// hashCmd represents the hash command
 var hashCmd = &cobra.Command{
 	Use:   "hash",
 	Short: "Hash allows you to create or verify hashes",
@@ -57,7 +56,6 @@ func init() {
 	hashCmd.AddCommand(genCmd)
 	hashCmd.AddCommand(verifyCmd)
 
-	// Here you define your flags and configuration settings.
 	hashCmd.PersistentFlags().StringVarP(&algorythm, "algorythm", "a", "sha256", "Algorythm to use when hashing")
 
 	genCmd.Flags().StringVarP(&dataString, "data", "d", "", "Data to be hashed")
@@ -77,7 +75,6 @@ This subcommand generates hashes from strings and files.
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Generating Hash...")
 		if dataString != "" {
-			// * Check if dataString is null, if not hash the data
 			hash := hashString(dataString)
 			if hash != "" {
 				fmt.Println("Hashed String: ")
@@ -86,14 +83,11 @@ This subcommand generates hashes from strings and files.
 				panic("Cannot find algorythm")
 			}
 		} else {
-			// * Search if the file was specified exists
 			if filePath != "" {
 				if outputFile != "" {
-					// * File output exists, hash file and create new file with name of output file
 					fmt.Println("Writing file1")
 					writeFile(readFile(filePath), outputFile)
 				} else {
-					// * File output doesnt exists, create new file with default name
 					fileNameSplit := strings.Split(filePath, ".")
 					fileName := fileNameSplit[0]
 					fmt.Println("Writing file2")
@@ -115,7 +109,6 @@ This subcommand verifies file hash sums.
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Verifing Hash...")
 		if inputFile != "" && hashSumFile != "" && algorythm != "" {
-			// * First Calculate hash of the inputFile
 			fileHash := readFile(inputFile)
 			hash := readFileRaw(hashSumFile)
 			if fileHash == hash {
@@ -133,7 +126,6 @@ This subcommand verifies file hash sums.
 }
 
 func hashString(data string) string {
-	// Switch the algorythm and hash the data
 	switch algorythm {
 	case "sha256":
 		hashedString := sha256.Sum256([]byte(data))
@@ -150,12 +142,12 @@ func hashString(data string) string {
 }
 
 func readFile(FilePath string) string {
-	// Reads the file and returns the hash string
 	f, err := os.Open(FilePath)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
+
 	switch algorythm {
 	case "sha256":
 		h := sha256.New()
@@ -163,25 +155,27 @@ func readFile(FilePath string) string {
 			panic(err)
 		}
 		return hex.EncodeToString(h.Sum(nil))
+
 	case "sha512":
 		h := sha512.New()
 		if _, err := io.Copy(h, f); err != nil {
 			panic(err)
 		}
 		return hex.EncodeToString(h.Sum(nil))
+
 	case "md5":
 		h := md5.New()
 		if _, err := io.Copy(h, f); err != nil {
 			panic(err)
 		}
 		return hex.EncodeToString(h.Sum(nil))
+
 	default:
 		panic("Cannot find algorythm")
 	}
 }
 
 func writeFile(Data string, Name string) {
-	// Writes data to the filename name
 	if Data != "" {
 		if err := os.WriteFile(Name, []byte(Data), 0666); err != nil {
 			panic(err)
@@ -192,7 +186,6 @@ func writeFile(Data string, Name string) {
 }
 
 func readFileRaw(FilePath string) string {
-	// Reads file and returns raw contents of the file
 	content, err := ioutil.ReadFile(FilePath)
 	if err != nil {
 		panic(err)
